@@ -1,0 +1,21 @@
+---
+- name: Setup NGINX webserver
+  hosts: web_servers
+  remote_user: admin
+  become: yes
+
+  tasks:
+  - name: Make sure all repos are updated
+    dnf:
+      update_cache: yes
+  
+  - name: Install NGINX
+    dnf:
+      name: nginx
+      state: latest
+  
+  - name: Start Service
+    service:
+      name: nginx
+      state: restarted
+      enabled: yes
