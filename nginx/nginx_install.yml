@@ -3,6 +3,10 @@
   hosts: web_servers
   remote_user: admin
   become: yes
+  vars:
+    server_name: "{{ ansible_default_ipv4.address }}"
+    document_root: /var/www
+    app_root: demo
 
   tasks:
   - name: Make sure all repos are updated
@@ -19,3 +23,36 @@
       name: nginx
       state: restarted
       enabled: yes
+
+  - name: Create sites-available directory
+    file:
+      path: /etc/nginx/sites-available
+      state: directory
+
+  - name: Create sites-enabled directory
+    file:
+      path: /etc/nginx/sites-enabled
+      state: directory
+  
+  - name: Copy files to document root
+    copy:
+      src: ../test_files/nginx/demo
+      dest: "{{ document_root }}"
+  
+  - name: Apply NGINX template
+    template:
+      src: ../test_files/nginx/demo.conf.j2
+      dest: /etc/nginx/sites-available/demo
+  
+  - name: Enable website
+    file:
+      src: /etc/nginx/sites-available/demo
+      dest: /etc/nginx/sites-enabled/demo
+      state: link
+    notify: Restart NGINX
+
+  handlers:
+    - name: Restart NGINX
+      service:
+        name: nginx
+        state: restarted
