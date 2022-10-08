@@ -1,24 +1,23 @@
 ---
 - name: Setup NGINX webserver
-  hosts: web_servers
+  hosts: webservers
   remote_user: admin
   become: yes
   vars:
     server_name: "{{ ansible_default_ipv4.address }}"
     document_root: /var/www
-    app_root: demo
 
   tasks:
   - name: Make sure all repos are updated
-    dnf:
+    apt:
       update_cache: yes
   
   - name: Install NGINX
-    dnf:
+    apt:
       name: nginx
       state: latest
   
-  - name: Start Service
+  - name: Start NGINX
     service:
       name: nginx
       state: restarted
@@ -34,20 +33,20 @@
       path: /etc/nginx/sites-enabled
       state: directory
   
-  - name: Copy files to document root
-    copy:
-      src: ../test_files/nginx/demo
-      dest: "{{ document_root }}"
+  # - name: Copy files to document root
+  #   copy:
+  #     src: "{{ site_dir }}"
+  #     dest: "{{ document_root }}"
   
   - name: Apply NGINX template
     template:
-      src: ../test_files/nginx/demo.conf.j2
-      dest: /etc/nginx/sites-available/demo
+      src: "{{ config_file_name }}"
+      dest: /etc/nginx/sites-available/{{ site_name }}
   
   - name: Enable website
     file:
-      src: /etc/nginx/sites-available/demo
-      dest: /etc/nginx/sites-enabled/demo
+      src: /etc/nginx/sites-available/{{ site_name }}
+      dest: /etc/nginx/sites-enabled/{{ site_name }}
       state: link
     notify: Restart NGINX
 
