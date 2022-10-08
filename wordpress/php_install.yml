@@ -1,0 +1,26 @@
+---
+- name: Install PHP packages
+  hosts: webservers
+  remote_user: admin
+  become: yes
+
+  tasks:
+  - name: Add apt key
+    apt_key:
+      keyserver: keyserver.ubuntu.com
+      id: 4f4ea0aae5267a6c
+
+  - name: Add php repository
+    apt_repository:
+      repo: deb https://ppa.launchpadcontent.net/ondrej/php/ubuntu focal main ppa:ondrej/php
+      state: present
+
+  - name: Installing php packages
+    apt:
+      name:
+        - php
+        - php-common
+        - php-cli
+        - php-fpm
+      update_cache: yes
+      state: latest

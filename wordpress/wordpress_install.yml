@@ -1,0 +1,39 @@
+---
+  - name: Setup Wordpress
+    hosts: webservers
+    remote_user: admin
+    become: yes
+
+    tasks:
+    - name: Install tar
+      apt:
+        name: tar
+        state: latest
+
+    - name: Install unzip
+      apt:
+        name: unzip
+        state: latest
+
+    - name: Download Wordpress package
+      get_url:
+        url: https://wordpress.org/latest.zip
+        dest: /var/www
+    
+    - name: Unzip Wordpress package
+      unarchive:
+        src: /var/www/wordpress-6.0.2.zip
+        dest: /var/www
+        remote_src: yes
+
+    - name: Change owner of Wordpress directory
+      file:
+        path: /var/www/wordpress
+        owner: wp_admin
+        group: wp_admin
+        recurse: yes
+    
+    - name: Copy local Wordpress config to remote
+      copy:
+        src: ../files/wordpress/wp-config.php
+        dest: /var/www/wordpress/
